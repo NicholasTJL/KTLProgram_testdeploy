@@ -122,3 +122,141 @@ To test:
 2. Submit it
 3. Check both terminal windows to see the data flow
 4. Check your browser's console to see the response
+   
+--
+Now that your frontend is deployed on Vercel, let's set up the Flask backend to handle different calculations for each vessel type. First, I'll help you structure the Flask backend with specific calculations for each vessel type:
+
+1. Create a new directory for your backend:
+```bash
+mkdir vessel-calculator-api
+cd vessel-calculator-api
+```
+
+2. Set up a Flask application with proper route handling:
+
+```python
+from flask import Flask, request, jsonify
+from flask_cors import CORS
+import math
+
+app = Flask(__name__)
+CORS(app)
+
+# Calculation functions for each vessel type
+def calculate_displacement_cargoboat(data):
+    """Calculations specific to displacement type cargoboat"""
+    loa = float(data.get('loa', 0))
+    width = float(data.get('width', 0))
+    draft = float(data.get('draft', 0))
+    engine_power = float(data.get('enginePower', 0))
+    
+    # Add your specific cargoboat calculations here
+    return {
+        "displacement": loa * width * draft * 0.85,  # Example calculation
+        "power_ratio": engine_power / (loa * width),
+        # Add more specific calculations
+    }
+
+def calculate_displacement_landing_craft(data):
+    """Calculations specific to displacement type landing craft"""
+    # Add specific calculations for landing craft
+    pass
+
+def calculate_planing_vessel(data):
+    """Calculations specific to planing vessels"""
+    # Add specific calculations for planing vessels
+    pass
+
+@app.route('/calculate', methods=['POST'])
+def calculate():
+    try:
+        data = request.json
+        vessel_type = data.get('vessel_type')
+        sub_type = data.get('sub_type')
+        
+        # Dictionary to map vessel types to their calculation functions
+        calculation_functions = {
+            'displacement': {
+                'cargoboat': calculate_displacement_cargoboat,
+                'landing-craft': calculate_displacement_landing_craft,
+                # Add more subtypes
+            },
+            'planing': {
+                'type1': calculate_planing_vessel,
+                # Add more subtypes
+            }
+            # Add more vessel types
+        }
+        
+        # Get the appropriate calculation function
+        if vessel_type in calculation_functions and sub_type in calculation_functions[vessel_type]:
+            calculation_func = calculation_functions[vessel_type][sub_type]
+            results = calculation_func(data)
+            
+            return jsonify({
+                "status": "success",
+                "results": results
+            })
+        else:
+            return jsonify({
+                "status": "error",
+                "message": f"No calculation method for vessel type: {vessel_type}, sub type: {sub_type}"
+            })
+            
+    except Exception as e:
+        return jsonify({
+            "status": "error",
+            "message": str(e)
+        })
+
+if __name__ == '__main__':
+    app.run(debug=True)
+```
+
+3. Update your frontend to send the correct data to the backend:
+```javascript
+// In your VesselCalculator component, update the handleCalculate function:
+const handleCalculate = async () => {
+    try {
+        const response = await fetch('YOUR_BACKEND_URL/calculate', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+                vessel_type: vesselType.id,
+                sub_type: subType,
+                ...formData
+            })
+        });
+        
+        const data = await response.json();
+        if (data.status === 'success') {
+            setResults(data.results);
+        } else {
+            // Handle error
+            console.error('Calculation error:', data.message);
+        }
+    } catch (error) {
+        console.error('API error:', error);
+    }
+};
+```
+
+To test this locally:
+1. Run the Flask backend:
+```bash
+python app.py
+```
+
+2. The frontend is already deployed on Vercel, but for local testing you can:
+```bash
+npm run dev
+```
+
+Next steps:
+1. Add specific calculation functions for each vessel type
+2. Deploy the Flask backend (options include: PythonAnywhere, Heroku, DigitalOcean)
+3. Update the frontend with the deployed backend URL
+
+--
