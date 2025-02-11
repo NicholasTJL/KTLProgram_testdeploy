@@ -173,7 +173,7 @@ export default function VesselCalculatorContainer() {
         setResults(null);
 
         console.log('Sending request to:', `${process.env.NEXT_PUBLIC_API_URL}/calculate`);
-        const response = await fetch('http://localhost:5000/calculate', {
+        const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/calculate`, {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
